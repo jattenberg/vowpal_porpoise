@@ -45,6 +45,8 @@ class _VW(sklearn.base.BaseEstimator):
                  incremental=False,
                  mem=None,
                  nn=None,
+                 ngrams=None,
+                 skips=None
                  ):
         self.logger = logger
         self.vw = vw
@@ -76,6 +78,8 @@ class _VW(sklearn.base.BaseEstimator):
         self.incremental = incremental
         self.mem = mem
         self.nn = nn
+        self.ngrams = ngrams
+        self.skips = skips
 
     def fit(self, X, y):
         """Fit Vowpal Wabbit
@@ -120,7 +124,9 @@ class _VW(sklearn.base.BaseEstimator):
             old_model=self.old_model,
             incremental=self.incremental,
             mem=self.mem,
-            nn=self.nn
+            nn=self.nn,
+            ngrams=self.ngrams,
+            skips=self.skips
         )
 
         # add examples to model
@@ -136,7 +142,8 @@ class _VW(sklearn.base.BaseEstimator):
 
         Parameters
         ----------
-        X: [{<feature name>: <feature value>}]
+        X: [{<feature name>: <feature value>}] or
+           [<text features>] or [[<text features>]]
             input features
         """
         examples = _as_vw_strings(X)
@@ -168,12 +175,18 @@ def _as_vw_string(x, y=None):
 
     Parameters
     ----------
-    x : {<feature>: <value>}
+    x : {<feature>: <value>} or <text features> or [<text features>]
     y : int or float
     """
     result = str(y)
-    x = " ".join(["%s:%f" % (key, value) for (key, value) in x.items()])
-    return result + " | " + x
+    if isinstance(x, str):
+        return result + " | " + x
+    elif isinstance(x, list):
+        return result + " | " + " ".join(x)
+    elif isinstance(x, dict):
+        return result + " | " + " ".join(["%s:%f" % (key, value) for (key, value) in x.items()])
+    else:
+        raise TypeError("unsupported type: %s" % type(x))
 
 
 def _as_vw_strings(X, y=None):

@@ -42,6 +42,8 @@ class VW:
                  incremental=False,
                  mem=None,
                  nn=None,
+                 ngrams=None,
+                 skips=None,
                  **kwargs):
         assert moniker and passes
 
@@ -102,6 +104,8 @@ class VW:
         self.bfgs = bfgs
         self.mem = mem
         self.nn = nn
+        self.ngrams = ngrams
+        self.skips = skips
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -146,6 +150,8 @@ class VW:
         if self.bfgs:                            l.append('--bfgs')
         if self.adaptive:                        l.append('--adaptive')
         if self.nn                  is not None: l.append('--nn=%d' % self.nn)
+        if self.ngrams              is not None: l.append('--ngram %d' % self.ngrams)
+        if self.skips               is not None: l.append('--skips %d' % self.skips)
         return ' '.join(l)
 
     def vw_train_command(self, cache_file, model_file):
