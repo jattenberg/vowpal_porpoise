@@ -46,7 +46,8 @@ class _VW(sklearn.base.BaseEstimator):
                  mem=None,
                  nn=None,
                  ngrams=None,
-                 skips=None
+                 skips=None,
+                 classify=True
                  ):
         self.logger = logger
         self.vw = vw
@@ -80,6 +81,7 @@ class _VW(sklearn.base.BaseEstimator):
         self.nn = nn
         self.ngrams = ngrams
         self.skips = skips
+        self.classify = classify
 
     def fit(self, X, y):
         """Fit Vowpal Wabbit
@@ -156,7 +158,7 @@ class _VW(sklearn.base.BaseEstimator):
         # read out predictions
         predictions = np.asarray(list(self.vw_.read_predictions_()))
 
-        return predictions
+        return [1 if x >= 0 else -1 for x in predictions] if self.classify else predictions
 
 
 class VW_Regressor(sklearn.base.RegressorMixin, _VW):
