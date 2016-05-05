@@ -225,7 +225,7 @@ def _as_vw_string(x, y=None):
 
 
 def _as_vw_strings(X, y=None):
-    n_samples = np.shape(X)[0]
     if y is None:
-        y = np.ones(n_samples)
-    return [_as_vw_string(X[i], y[i]) for i in range(n_samples)]
+        y = np.ones(len(X))
+    return [_as_vw_string(x[0], x[1]) for x in zip(X, y)]
+
