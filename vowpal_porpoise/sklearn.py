@@ -3,6 +3,7 @@ import sklearn.base
 import numpy as np
 
 import vowpal_porpoise
+from time import sleep
 
 # if you try to say "import sklearn", it thinks sklearn is this file :(
 class _VW(sklearn.base.BaseEstimator):
@@ -154,6 +155,7 @@ class _VW(sklearn.base.BaseEstimator):
             with self.vw_.predicting():
                 for instance in examples:
                     self.vw_.push_instance(instance)
+                    sleep(0.01)
             # read out predictions
             predictions = np.asarray(list(self.vw_.read_predictions_()))
         else:
@@ -181,6 +183,7 @@ class _VW(sklearn.base.BaseEstimator):
             with self.vw_.predicting():
                 for instance in examples:
                     self.vw_.push_instance(instance)
+                    sleep(0.01)
             # read out predictions
             predictions = list(self.vw_.read_predictions_())
         else:

@@ -212,9 +212,7 @@ class VW:
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
 
     def push_instance_stdin(self, instance):
-        print self.vw_process.poll()
         (stdout, stderr) = self.vw_process.communicate(('%s\n' % instance).encode('utf8'))
-        print stdout
         #self.vw_process.stdin.write()
 
     def start_predicting(self):
