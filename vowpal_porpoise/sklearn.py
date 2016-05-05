@@ -80,6 +80,7 @@ class _VW(sklearn.base.BaseEstimator):
         self.ngrams = ngrams
         self.skips = skips
         self.classify = classify
+        self.vw_ = None
 
     def fit(self, X, y):
         """Fit Vowpal Wabbit
@@ -147,7 +148,7 @@ class _VW(sklearn.base.BaseEstimator):
             input features
         """
 
-        if hasattr(self, 'vw_'):
+        if self.vw_:
             examples = _as_vw_strings(X)
             # add test examples to model
             with self.vw_.predicting():
@@ -174,7 +175,7 @@ class _VW(sklearn.base.BaseEstimator):
         """
 
 
-        if hasattr(self, 'vw_'):
+        if self.vw_:
             examples = _as_vw_strings(X)
             # add test examples to model
             with self.vw_.predicting():
@@ -182,7 +183,9 @@ class _VW(sklearn.base.BaseEstimator):
                     self.vw_.push_instance(instance)
             # read out predictions
             predictions = list(self.vw_.read_predictions_())
+            print predictions
         else:
+            print "vw not set!!!!!!"
             # model hasn't been trained yet, just emit randomness
             predictions = np.random.normal(size=len(X))
 

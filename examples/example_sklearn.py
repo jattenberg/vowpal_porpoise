@@ -50,14 +50,14 @@ def main():
         VW_Classifier(loss='logistic', moniker='example_sklearn',
                       passes=10, silent=True, learning_rate=10),
         param_grid=parameters,
-        score_func=f1_score,
+        scoring='roc_auc',
         cv=StratifiedKFold(y_train),
     ).fit(X_train, y_train)
 
     # print out results from cross-validation
     estimator = gs.best_estimator_
     score = gs.best_score_
-    print 'Achieved a F1 score of %f using l2 == %f during cross-validation' % (score, estimator.l2)
+    print 'Achieved an AUC score of %f using l2 == %f during cross-validation' % (score, estimator.l2)
 
     # print confusion matrix on test data
     y_est = estimator.fit(X_train, y_train).predict(X_test)
