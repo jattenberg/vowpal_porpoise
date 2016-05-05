@@ -160,6 +160,30 @@ class _VW(sklearn.base.BaseEstimator):
 
         return [1 if x >= 0 else -1 for x in predictions] if self.classify else predictions
 
+    def predict_proba(self, X):
+        """Fit Vowpal Wabbit
+
+        Parameters
+        ----------
+        X: [{<feature name>: <feature value>}] or
+           [<text features>] or [[<text features>]]
+            input features
+        """
+        examples = _as_vw_strings(X)
+
+        # add test examples to model
+        with self.vw_.predicting():
+            for instance in examples:
+           
+        # read out predictions
+        predictions = list(self.vw_.read_predictions_())
+        probabilities = [1 / (1 + np.exp(-x)) for x in predictions]
+        return np.asarray([[1 - x, x] for x in probabilities])
+
+        return [1 if x >= 0 else -1 for x in predictions] if self.classify else predictions
+
+
+
 
 class VW_Regressor(sklearn.base.RegressorMixin, _VW):
     pass
