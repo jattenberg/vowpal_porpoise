@@ -147,7 +147,7 @@ class _VW(sklearn.base.BaseEstimator):
             input features
         """
 
-        if hasattr(a, 'vw_'):
+        if hasattr(self, 'vw_'):
             examples = _as_vw_strings(X)
             # add test examples to model
             with self.vw_.predicting():
@@ -174,7 +174,7 @@ class _VW(sklearn.base.BaseEstimator):
         """
 
 
-        if hasattr(a, 'vw_'):
+        if hasattr(self, 'vw_'):
             examples = _as_vw_strings(X)
             # add test examples to model
             with self.vw_.predicting():
