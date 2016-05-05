@@ -5,8 +5,6 @@ import numpy as np
 import vowpal_porpoise
 
 # if you try to say "import sklearn", it thinks sklearn is this file :(
-
-
 class _VW(sklearn.base.BaseEstimator):
 
     """scikit-learn interface for Vowpal Wabbit
@@ -194,7 +192,6 @@ class VW_Classifier(sklearn.base.ClassifierMixin, _VW):
         result = super(VW_Classifier, self).predict(X)
         return result
 
-
 def _as_vw_string(x, y=None):
     """Convert {feature: value} to something _VW understands
 
@@ -208,7 +205,7 @@ def _as_vw_string(x, y=None):
         return result + " | " + x
     elif isinstance(x, list):
         return result + " | " + " ".join([str(z) for z in x])
-    elif ininstance(x, numpy.ndarray):
+    elif isinstance(x, numpy.ndarray):
         return result + " | " + " ".join([str(z) for z in x])
     elif isinstance(x, dict):
         return result + " | " + " ".join(["%s:%f" % (key, value) for (key, value) in x.items()])
