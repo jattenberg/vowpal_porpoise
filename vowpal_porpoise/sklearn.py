@@ -183,9 +183,7 @@ class _VW(sklearn.base.BaseEstimator):
                     self.vw_.push_instance(instance)
             # read out predictions
             predictions = list(self.vw_.read_predictions_())
-            print predictions
         else:
-            print "vw not set!!!!!!"
             # model hasn't been trained yet, just emit randomness
             predictions = np.random.normal(size=len(X))
 
