@@ -190,7 +190,7 @@ class _VW(sklearn.base.BaseEstimator):
         probabilities = [1 / (1 + np.exp(-x)) for x in predictions]
         return np.asarray([[1 - x, x] for x in probabilities])
 
-    def close():
+    def close(self):
         self.vw_close_process()
 
 
