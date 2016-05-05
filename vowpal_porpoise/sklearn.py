@@ -191,7 +191,7 @@ class _VW(sklearn.base.BaseEstimator):
         return np.asarray([[1 - x, x] for x in probabilities])
 
     def close(self):
-        self.vw_close_process()
+        self.vw_.close_process()
 
 
 class VW_Regressor(sklearn.base.RegressorMixin, _VW):
