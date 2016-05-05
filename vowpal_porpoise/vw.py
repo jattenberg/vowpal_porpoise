@@ -213,7 +213,9 @@ class VW:
 
     def push_instance_stdin(self, instance):
         print self.vw_process.poll()
-        self.vw_process.stdin.write(('%s\n' % instance).encode('utf8'))
+        (stdout, stderr) = self.vw_process.communicate(('%s\n' % instance).encode('utf8'))
+        print stdout
+        #self.vw_process.stdin.write()
 
     def start_predicting(self):
         model_file = self.get_model_file()
