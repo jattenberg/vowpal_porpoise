@@ -215,9 +215,11 @@ def _as_vw_string(x, y=None):
     if isinstance(x, str):
         return result + " | " + x
     elif isinstance(x, list):
-        return result + " | " + " ".join([str(z) for z in x])
+        return result + " | " + " ".join(["%s" % z for z in x])
     elif isinstance(x, np.ndarray):
-        return result + " | " + " ".join([str(z) for z in x])
+        out = result + " | " + " ".join(["%s" % z for z in x])
+        print out
+        return out
     elif isinstance(x, dict):
         return result + " | " + " ".join(["%s:%f" % (key, value) for (key, value) in x.items()])
     else:
