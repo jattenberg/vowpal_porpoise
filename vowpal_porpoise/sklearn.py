@@ -146,15 +146,20 @@ class _VW(sklearn.base.BaseEstimator):
            [<text features>] or [[<text features>]]
             input features
         """
-        examples = _as_vw_strings(X)
 
-        # add test examples to model
-        with self.vw_.predicting():
-            for instance in examples:
-                self.vw_.push_instance(instance)
+        if hasattr(a, 'vw_'):
+            examples = _as_vw_strings(X)
+            # add test examples to model
+            with self.vw_.predicting():
+                for instance in examples:
+                    self.vw_.push_instance(instance)
+            # read out predictions
+            predictions = np.asarray(list(self.vw_.read_predictions_()))
+        else:
+            # model hasn't been trained yet, just emit randomness
+            predictions = np.random.normal(size=len(X))
 
-        # read out predictions
-        predictions = np.asarray(list(self.vw_.read_predictions_()))
+
 
         return [1 if x >= 0 else -1 for x in predictions] if self.classify else predictions
 
@@ -167,15 +172,20 @@ class _VW(sklearn.base.BaseEstimator):
            [<text features>] or [[<text features>]]
             input features
         """
-        examples = _as_vw_strings(X)
 
-        # add test examples to model
-        with self.vw_.predicting():
-            for instance in examples:
-                self.vw_.push_instance(instance)
 
-        # read out predictions
-        predictions = list(self.vw_.read_predictions_())
+        if hasattr(a, 'vw_'):
+            examples = _as_vw_strings(X)
+            # add test examples to model
+            with self.vw_.predicting():
+                for instance in examples:
+                    self.vw_.push_instance(instance)
+            # read out predictions
+            predictions = list(self.vw_.read_predictions_())
+        else:
+            # model hasn't been trained yet, just emit randomness
+            predictions = np.random.normal(size=len(X))
+
         probabilities = [1 / (1 + np.exp(-x)) for x in predictions]
         return np.asarray([[1 - x, x] for x in probabilities])
 
