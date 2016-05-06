@@ -155,7 +155,7 @@ class _VW(sklearn.base.BaseEstimator):
                 for instance in examples:
                     self.vw_.push_instance(instance)
             # read out predictions
-            predictions = np.asarray(list(self.vw_.read_predictions_()))
+            predictions = np.asarray(list(self.vw_.read_predictions()))
         else:
             # model hasn't been trained yet, just emit randomness
             predictions = np.random.normal(size=len(X))
@@ -182,7 +182,7 @@ class _VW(sklearn.base.BaseEstimator):
                 for instance in examples:
                     self.vw_.push_instance(instance)
             # read out predictions
-            predictions = list(self.vw_.read_predictions_())
+            predictions = list(self.vw_.read_predictions())
         else:
             # model hasn't been trained yet, just emit randomness
             predictions = np.random.normal(size=len(X))
