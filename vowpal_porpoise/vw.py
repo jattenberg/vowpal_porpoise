@@ -5,6 +5,7 @@ import subprocess
 import shlex
 import tempfile
 from vp_utils import safe_remove, VPLogger
+import socket
 
 class VW:
     def __init__(self,
@@ -44,6 +45,7 @@ class VW:
                  nn=None,
                  ngrams=None,
                  skips=None,
+                 port=6666,
                  **kwargs):
         assert moniker and passes
 
@@ -106,6 +108,7 @@ class VW:
         self.nn = nn
         self.ngrams = ngrams
         self.skips = skips
+        self.port = port
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -164,7 +167,7 @@ class VW:
                     % (self.passes, cache_file, model_file)
 
     def vw_test_command(self, model_file, prediction_file):
-        return self.vw_base_command([self.vw]) + ' -t -i %s -p %s' % (model_file, prediction_file)
+        return self.vw_base_command([self.vw]) + ' -t -i %s --daemon --port %s' % (model_file, self.port)
 
     def vw_test_command_library(self, model_file):
         return self.vw_base_command([]) + ' -t -i %s' % (model_file)
@@ -211,6 +214,17 @@ class VW:
             raise Exception("vw_process %d (%s) exited abnormally with return code %d" % \
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
 
+    def push_instance_socket(self, instance):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('localhost', self.port))
+        s.sendall(('%s\n' % instance).encode('utf8'))
+        while 1:
+            data = s.recv(4096)
+            if data == "":
+                break
+            self.prediction_list.append(data)
+        s.close()
+
     def push_instance_stdin(self, instance):
         self.vw_process.stdin.write(('%s\n' % instance).encode('utf8'))
 
@@ -222,8 +236,9 @@ class VW:
         os.close(_)
 
         self.vw_process = self.make_subprocess(self.vw_test_command(model_file, prediction_file))
-        self.prediction_file = prediction_file
-        self.push_instance = self.push_instance_stdin
+        self.prediction_list = []
+        self.push_instance = self.push_instance_socket
+        self.read_predictions = self.read_predictions_list
 
     def start_predicting_library(self):
         import vw_py
@@ -243,6 +258,10 @@ class VW:
             return map(float, p.split())
         else:
             return float(p.split()[0])
+
+    def read_predictions_list(self):
+        for x in self.prediction_list:
+            yield self.parse_prediction(x)
 
     def read_predictions_(self):
         for x in open(self.prediction_file):
