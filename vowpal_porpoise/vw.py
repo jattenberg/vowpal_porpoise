@@ -218,6 +218,7 @@ class VW:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((socket.gethostname(), self.port))
         s.sendall(('%s\n' % instance).encode('utf8'))
+        s.shutdown(socket.SHUT_WR)
         data = s.recv(4096)
         if data != "":
             self.prediction_list.append(data)
