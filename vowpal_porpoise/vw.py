@@ -6,6 +6,8 @@ import shlex
 import tempfile
 from vp_utils import safe_remove, VPLogger
 import socket
+import atexit
+import os
 
 class VW:
     def __init__(self,
@@ -110,6 +112,8 @@ class VW:
         self.skips = skips
         self.port = port
 
+        atexit.register(self.close_process)
+
         # Do some sanity checking for compatability between models
         if self.lda:
             assert not self.l1
@@ -213,6 +217,7 @@ class VW:
         if self.vw_process.wait() != 0:
             raise Exception("vw_process %d (%s) exited abnormally with return code %d" % \
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
+        os.system("pkill -9 -f 'vw.*--port %s'" % self.port)
 
     def push_instance_socket(self, instance):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
