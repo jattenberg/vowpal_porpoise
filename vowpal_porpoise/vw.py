@@ -212,12 +212,7 @@ class VW:
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
 
     def push_instance_stdin(self, instance):
-        response = self.vw_process.communicate(('%s\n' % instance).encode('utf8'))
-        self.vw_process.wait()
-        if response[0]:
-            self.vw_process.stdoutfile.write(response[0] + "\n")
-        if response[1]:
-            self.vw_process.stderrfile.write(response[1] + "\n")
+        self.vw_process.communicate(('%s\n' % instance).encode('utf8'))
 
     def start_predicting(self):
         model_file = self.get_model_file()
@@ -274,7 +269,7 @@ class VW:
             stdout.write(command + '\n')
             stderr.write(command + '\n')
         self.log.debug('Running command: "%s"' % str(command))
-        result = subprocess.Popen(shlex.split(str(command)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, universal_newlines=True)
+        result = subprocess.Popen(shlex.split(str(command)), stdin=subprocess.PIPE, stdout=subprocess.stdout, stderr=subprocess.stderr, close_fds=True, universal_newlines=True)
         result.command = command
         result.stdoutfile = stdout
         result.stderrfile = stderr
