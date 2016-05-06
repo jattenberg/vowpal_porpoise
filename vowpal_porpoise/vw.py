@@ -213,7 +213,7 @@ class VW:
 
     def push_instance_stdin(self, instance):
         response = self.vw_process.communicate(('%s\n' % instance).encode('utf8'))
-        response.wait()
+        self.vw_process.wait()
         if response[0]:
             self.vw_process.stdoutfile.write(response[0] + "\n")
         if response[1]:
