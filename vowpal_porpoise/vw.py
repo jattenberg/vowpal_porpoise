@@ -275,8 +275,8 @@ class VW:
         self.log.debug('Running command: "%s"' % str(command))
         result = subprocess.Popen(shlex.split(str(command)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, universal_newlines=True)
         result.command = command
-        x.stdoutfile = stdout
-        x.stderrfile = stderr
+        result.stdoutfile = stdout
+        result.stderrfile = stderr
         return result
 
     def get_current_stdout(self):
