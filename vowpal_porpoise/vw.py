@@ -220,6 +220,7 @@ class VW:
         s.sendall(('%s\n' % instance).encode('utf8'))
         while 1:
             data = s.recv(4096)
+            print data
             if data == "":
                 break
             self.prediction_list.append(data)
