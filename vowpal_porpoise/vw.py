@@ -216,7 +216,7 @@ class VW:
         if response[0]:
             self.vw_process.stdoutfile.write(response[0] + "\n")
         if response[1]:
-            self.vw_process.stderrfile.write(respone[1] + "\n")
+            self.vw_process.stderrfile.write(response[1] + "\n")
 
     def start_predicting(self):
         model_file = self.get_model_file()
