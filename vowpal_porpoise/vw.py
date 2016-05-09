@@ -179,13 +179,13 @@ class VW:
     def training(self):
         self.start_training()
         yield
-        self.close_training_process()
+        self.close_process()
 
     @contextmanager
     def predicting(self):
         self.start_predicting()
         yield
-        pass
+        self.close_process()
 
     def start_training(self):
         _, example_file = tempfile.mkstemp(dir='.', prefix=self.get_example_file("training"))
@@ -212,9 +212,9 @@ class VW:
         self.read_predictions = self.read_predictions_
         self.prediction_file = prediction_file
 
-    def close_training_process(self):
+    def close_process(self):
         self.training_handle.close()
-        os.remove(self.training_file)
+        safe_remove(self.training_file)
 
 
     def train(self, examples):
@@ -249,7 +249,7 @@ class VW:
         for x in open(self.prediction_file):
             yield self.parse_prediction(x)
         # clean up the prediction file
-        os.remove(self.prediction_file)
+        safe_remove(self.prediction_file)
 
 
     def get_model_file(self):
