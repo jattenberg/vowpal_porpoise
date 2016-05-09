@@ -44,10 +44,10 @@ def main():
     i = int(0.8 * len(X))
     X_train, X_test = X[:i], X[i:]
     y_train, y_test = y[:i], y[i:]
-    estimator = VW_Classifier(loss='logistic', moniker='example_sklearn',
-                              passes=10, silent=True, learning_rate=10)
+#    estimator = VW_Classifier(loss='logistic', moniker='example_sklearn',
+#                              passes=10, silent=True, learning_rate=10)
     # do the actual learning
-    """
+
     gs = GridSearchCV(
         VW_Classifier(loss='logistic', moniker='example_sklearn',
                       passes=10, silent=True, learning_rate=10),
@@ -60,7 +60,7 @@ def main():
     estimator = gs.best_estimator_
     score = gs.best_score_
     print 'Achieved an AUC score of %f using l2 == %f during cross-validation' % (score, estimator.l2)
-    """
+
     # print confusion matrix on test data
     y_est = estimator.fit(X_train, y_train).predict(X_test)
     print 'Confusion Matrix:'

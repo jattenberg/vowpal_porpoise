@@ -111,8 +111,7 @@ class VW:
         self.ngrams = ngrams
         self.skips = skips
         self.port = port
-
-        atexit.register(self.close_process)
+        self.socket = None
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -161,101 +160,84 @@ class VW:
         if self.skips               is not None: l.append('--skips %d' % self.skips)
         return ' '.join(l)
 
-    def vw_train_command(self, cache_file, model_file):
+
+    def vw_file_training_command(self, cache_file, model_file, training_file):
         if os.path.exists(model_file) and self.incremental:
-            return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -i %s -f %s' \
-                    % (self.passes, cache_file, model_file, model_file)
+            return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -i %s -f %s -d %s' \
+                    % (self.passes, cache_file, model_file, model_file, training_file)
         else:
             self.log.debug('No existing model file or not options.incremental')
-            return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -f %s' \
-                    % (self.passes, cache_file, model_file)
+            return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -f %s -d %s' \
+                    % (self.passes, cache_file, model_file, training_file)
 
-    def vw_test_command(self, model_file, prediction_file):
-        return self.vw_base_command([self.vw]) + ' -t -i %s --daemon --port %s' % (model_file, self.port)
 
-    def vw_test_command_library(self, model_file):
-        return self.vw_base_command([]) + ' -t -i %s' % (model_file)
+    def vw_file_test_command(self, model_file, prediction_file, example_file):
+        return self.vw_base_command([self.vw]) + ' -t -i %s -d %s -p %s' % (model_file, example_file, prediction_file)
+
 
     @contextmanager
     def training(self):
         self.start_training()
         yield
-        self.close_process()
+        self.close_training_process()
 
     @contextmanager
     def predicting(self):
         self.start_predicting()
         yield
-        self.close_process()
-
-    @contextmanager
-    def predicting_library(self):
-        self.start_predicting_library()
-        yield
-        self.end_predicting_library()
+        pass
 
     def start_training(self):
-        cache_file = self.get_cache_file()
-        model_file = self.get_model_file()
+        _, example_file = tempfile.mkstemp(dir='.', prefix=self.get_example_file("training"))
+        os.close(_)
+        self.training_handle = open(example_file, 'w')
+        self.training_file = example_file
 
         # Remove the old cache and model files
         if not self.incremental:
+            cache_file = self.get_cache_file()
+            model_file = self.get_model_file()
             safe_remove(cache_file)
             safe_remove(model_file)
 
-        # Run the actual training
-        self.vw_process = self.make_subprocess(self.vw_train_command(cache_file, model_file))
-
-        # set the instance pusher
-        self.push_instance = self.push_instance_stdin
-
-    def close_process(self):
-        # Close the process
-        assert self.vw_process
-        self.vw_process.stdin.flush()
-        self.vw_process.stdin.close()
-        if self.vw_process.wait() != 0:
-            raise Exception("vw_process %d (%s) exited abnormally with return code %d" % \
-                (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
-        os.system("pkill -9 -f 'vw.*--port %s'" % self.port)
-
-    def push_instance_socket(self, instance):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('', self.port))
-        s.sendall(('%s\n' % instance).encode('utf8'))
-        s.shutdown(socket.SHUT_WR)
-        data = s.recv(4096)
-        if data != "":
-            self.prediction_list.append(data)
-        s.close()
-
-    def push_instance_stdin(self, instance):
-        self.vw_process.stdin.write(('%s\n' % instance).encode('utf8'))
 
     def start_predicting(self):
-        model_file = self.get_model_file()
-        # Be sure that the prediction file has a unique filename, since many processes may try to
-        # make predictions using the same model at the same time
+        _, example_file = tempfile.mkstemp(dir='.', prefix=self.get_example_file("testing"))
+        os.close(_)
         _, prediction_file = tempfile.mkstemp(dir='.', prefix=self.get_prediction_file())
         os.close(_)
 
-        self.vw_process = self.make_subprocess(self.vw_test_command(model_file, prediction_file))
-        self.prediction_list = []
-        self.push_instance = self.push_instance_socket
-        self.read_predictions = self.read_predictions_list
+        self.training_handle = open(example_file, 'w')
+        self.training_file = example_file
+        self.read_predictions = self.read_predictions_
+        self.prediction_file = prediction_file
 
-    def start_predicting_library(self):
-        import vw_py
+    def close_training_process(self):
+        self.training_handle.close()
+        os.remove(self.training_file)
+
+
+    def train(self, examples):
+        for example in examples:
+            self.training_handle.write(example + "\n")
+
+        self.training_handle.flush()
         model_file = self.get_model_file()
-        self.vw_process = vw_py.VW(self.vw_test_command_library(model_file))
+        cache_file = self.get_cache_file()
 
-        # Set the library instance pusher
-        self.push_instance = self.predict_push_instance
+        command = self.vw_file_training_command(cache_file, model_file, self.training_file)
+        self.log.debug(command)
+        os.system(command)
 
-    def end_predicting_library(self):
-        # Close the process
-        assert self.vw_process
-        self.vw_process.finish()
+    def predict(self, examples):
+        for example in examples:
+            self.training_handle.write(example + "\n")
+        self.training_handle.flush()
+        model_file = self.get_model_file()
+
+        command = self.vw_file_test_command(model_file, self.prediction_file, self.training_file)
+        self.log.debug(command)
+        os.system(command)
 
     def parse_prediction(self, p):
         if self.lda:
@@ -263,45 +245,12 @@ class VW:
         else:
             return float(p.split()[0])
 
-    def read_predictions_list(self):
-        for x in self.prediction_list:
-            yield self.parse_prediction(x)
-
     def read_predictions_(self):
         for x in open(self.prediction_file):
             yield self.parse_prediction(x)
         # clean up the prediction file
         os.remove(self.prediction_file)
 
-    def predict_push_instance(self, instance):
-        return self.parse_prediction(self.vw_process.learn(('%s\n' % instance).encode('utf8')))
-
-    def make_subprocess(self, command):
-        if not self.log_stderr_to_file:
-            stdout = open('/dev/null', 'w')
-            stderr = open('/dev/null', 'w') if self.silent else sys.stderr
-            self.current_stdout = None
-            self.current_stderr = None
-        else:
-            # Save the output of vw to file for debugging purposes
-            log_file_base = tempfile.mktemp(dir=self.working_directory, prefix="vw-")
-            self.current_stdout = log_file_base + '.out'
-            self.current_stderr = log_file_base + '.err'
-            stdout = open(self.current_stdout, 'w')
-            stderr = open(self.current_stderr, 'w')
-            stdout.write(command + '\n')
-            stderr.write(command + '\n')
-        self.log.debug('Running command: "%s"' % str(command))
-        result = subprocess.Popen(shlex.split(str(command)), stdin=subprocess.PIPE, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
-        result.command = command
-
-        return result
-
-    def get_current_stdout(self):
-        return open(self.current_stdout)
-
-    def get_current_stderr(self):
-        return open(self.current_stderr)
 
     def get_model_file(self):
         return os.path.join(self.working_directory, self.filename)
@@ -311,3 +260,6 @@ class VW:
 
     def get_prediction_file(self):
         return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
+
+    def get_example_file(self, suffix = ""):
+        return os.path.join(self.working_directory, '%s.examples.%s' % (self.handle, suffix))

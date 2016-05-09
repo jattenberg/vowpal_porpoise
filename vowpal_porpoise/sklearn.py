@@ -132,8 +132,7 @@ class _VW(sklearn.base.BaseEstimator):
 
         # add examples to model
         with self.vw_.training():
-            for instance in examples:
-                self.vw_.push_instance(instance)
+            self.vw_.train(examples)
 
         # learning done after "with" statement
         return self
@@ -152,8 +151,7 @@ class _VW(sklearn.base.BaseEstimator):
             examples = _as_vw_strings(X)
             # add test examples to model
             with self.vw_.predicting():
-                for instance in examples:
-                    self.vw_.push_instance(instance)
+                self.vw_.predict(examples)
             # read out predictions
             predictions = np.asarray(list(self.vw_.read_predictions()))
         else:
@@ -179,8 +177,7 @@ class _VW(sklearn.base.BaseEstimator):
             examples = _as_vw_strings(X)
             # add test examples to model
             with self.vw_.predicting():
-                for instance in examples:
-                    self.vw_.push_instance(instance)
+                self.vw_.predict(examples)
             # read out predictions
             predictions = list(self.vw_.read_predictions())
         else:
