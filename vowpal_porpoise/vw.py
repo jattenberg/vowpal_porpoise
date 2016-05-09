@@ -47,7 +47,7 @@ class VW:
                  nn=None,
                  ngrams=None,
                  skips=None,
-                 port=6666,
+                 cleanup=False,
                  **kwargs):
         assert moniker and passes
 
@@ -110,8 +110,7 @@ class VW:
         self.nn = nn
         self.ngrams = ngrams
         self.skips = skips
-        self.port = port
-        self.socket = None
+        self.cleanup = cleanup
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -200,6 +199,8 @@ class VW:
         os.close(_)
         self.training_handle = open(example_file, 'w')
         self.training_file = example_file
+        
+        self.log.debug("storing training instancs: %s for %s " % (example_file, self.handle) )
 
         # Remove the old cache and model files
         if not self.incremental:
@@ -215,6 +216,9 @@ class VW:
         _, prediction_file = tempfile.mkstemp(dir='.', prefix=self.get_prediction_file())
         os.close(_)
 
+        self.log.debug("storing test instancs: %s for %s" % (example_file, self.handle) )
+        self.log.debug("writing predictions: %s for %s" % (prediction_file, self.handle) )
+
         self.training_handle = open(example_file, 'w')
         self.training_file = example_file
         self.read_predictions = self.read_predictions_
@@ -222,7 +226,8 @@ class VW:
 
     def close_process(self):
         self.training_handle.close()
-        safe_remove(self.training_file)
+        if self.cleanup:
+            safe_remove(self.training_file)
 
 
     def train(self, examples):
@@ -232,6 +237,7 @@ class VW:
         self.training_handle.flush()
         model_file = self.get_model_file()
         cache_file = self.get_cache_file()
+        self.log.debug("storing model: %s for %s" % (model_file, self.handle))
 
         command = self.vw_file_training_command(cache_file, model_file, self.training_file)
         self.log.debug(command)
