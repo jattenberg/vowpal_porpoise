@@ -175,6 +175,14 @@ class VW:
         return self.vw_base_command([self.vw]) + ' -t -i %s -d %s -p %s' % (model_file, example_file, prediction_file)
 
 
+    def cleanup(self):
+        cache_file = self.get_cache_file()
+        model_file = self.get_model_file()
+        safe_remove(cache_file)
+        safe_remove(model_file)
+        safe_remove(self.training_file)
+        safe_remove(self.prediction_file)
+
     @contextmanager
     def training(self):
         self.start_training()

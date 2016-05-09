@@ -32,7 +32,7 @@ class Array2Dict(TransformerMixin):
 def main():
     # parameters to cross-validate over
     parameters = {
-        'l2': np.logspace(-5, 0, num=6),
+        'l2': np.logspace(-5, -1, num=6),
     }
 
     # load iris data in, make a binary decision problem out of it

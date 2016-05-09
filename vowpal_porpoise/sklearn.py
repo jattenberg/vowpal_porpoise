@@ -154,12 +154,11 @@ class _VW(sklearn.base.BaseEstimator):
                 self.vw_.predict(examples)
             # read out predictions
             predictions = np.asarray(list(self.vw_.read_predictions()))
+            self.vw_.cleanup()
         else:
             # model hasn't been trained yet, just emit randomness
             predictions = np.random.normal(size=len(X))
-
-
-
+        
         return [1 if x >= 0 else -1 for x in predictions] if self.classify else predictions
 
     def predict_proba(self, X):
@@ -180,6 +179,7 @@ class _VW(sklearn.base.BaseEstimator):
                 self.vw_.predict(examples)
             # read out predictions
             predictions = list(self.vw_.read_predictions())
+            self.vw_.cleanup()
         else:
             # model hasn't been trained yet, just emit randomness
             predictions = np.random.normal(size=len(X))
