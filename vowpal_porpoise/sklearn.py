@@ -45,7 +45,8 @@ class _VW(sklearn.base.BaseEstimator):
                  nn=None,
                  ngrams=None,
                  skips=None,
-                 classify=True
+                 classify=True,
+                 cleanup=True
                  ):
         self.logger = logger
         self.vw = vw
@@ -81,6 +82,7 @@ class _VW(sklearn.base.BaseEstimator):
         self.skips = skips
         self.classify = classify
         self.vw_ = None
+        self.cleanup = cleanup
 
     def fit(self, X, y):
         """Fit Vowpal Wabbit
@@ -127,7 +129,8 @@ class _VW(sklearn.base.BaseEstimator):
             mem=self.mem,
             nn=self.nn,
             ngrams=self.ngrams,
-            skips=self.skips
+            skips=self.skips,
+            cleanup=self.cleanup
         )
 
         # add examples to model
