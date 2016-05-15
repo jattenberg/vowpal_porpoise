@@ -163,7 +163,7 @@ class VW:
         if self.nn                  is not None: l.append('--nn=%d' % self.nn)
         if self.ngrams              is not None: l.append('--ngram %d' % self.ngrams)
         if self.skips               is not None: l.append('--skips %d' % self.skips)
-        if self.ftrl                             l.append('--ftrl')
+        if self.ftrl:                            l.append('--ftrl')
         if self.ftrl_alpha          is not None: l.append('--ftrl_alpha %d' % self.ftrl_alpha)
         if self.ftrl_beta           is not None: l.append('--ftrl_beta %d' % self.ftrl_beta)
         return ' '.join(l)
