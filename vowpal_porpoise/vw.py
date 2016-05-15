@@ -48,6 +48,9 @@ class VW:
                  ngrams=None,
                  skips=None,
                  cleanup=False,
+                 ftrl=False,
+                 ftrl_alpha=None,
+                 ftrl_beta=None
                  **kwargs):
         assert moniker and passes
 
@@ -111,6 +114,9 @@ class VW:
         self.ngrams = ngrams
         self.skips = skips
         self.cleanup = cleanup
+        self.ftrl = ftrl
+        self.ftrl_alpha = ftrl_alpha
+        self.ftrl_beta = ftrl_beta
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -157,6 +163,9 @@ class VW:
         if self.nn                  is not None: l.append('--nn=%d' % self.nn)
         if self.ngrams              is not None: l.append('--ngram %d' % self.ngrams)
         if self.skips               is not None: l.append('--skips %d' % self.skips)
+        if self.ftrl                             l.append('--ftrl')
+        if self.ftrl_alpha          is not None: l.append('--ftrl_alpha %d' % self.ftrl_alpha)
+        if self.ftrl_beta           is not None: l.append('--ftrl_beta %d' % self.ftrl_beta)
         return ' '.join(l)
 
 
