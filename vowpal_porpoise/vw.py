@@ -50,7 +50,7 @@ class VW:
                  cleanup=False,
                  ftrl=False,
                  ftrl_alpha=None,
-                 ftrl_beta=None
+                 ftrl_beta=None,
                  **kwargs):
         assert moniker and passes
 
